@@ -37,7 +37,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_device_id = str(cfg_dict.get('tempest_device_id'))
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
-        self._rest_sleep_interval = str(cfg_dict.get('rest_sleep_interval'))
+        self._rest_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
 
     def hardware_name(self):
@@ -55,11 +55,11 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Fire up the listen_start and listen_rapid_start message types.  Rapid wind
         # provides the frequent wind direction/speed updates.  Listen_start gives you the 
         # summary and most importantly for this driver, the mqtt_data in the obs list.
-        ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"corrID"}')
+        ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
         resp = ws.recv()
         loginf(resp)
 
-        ws.send('{"type":"listen_start",' + ' "device_id":' + tempest_ID + ',' + ' "id":"corrID"}')
+        ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
         resp = ws.recv()
         loginf(resp)
 
@@ -67,7 +67,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
             loop_packet = {}
             mqtt_data = []
             resp = json.loads(ws.recv())
-            if resp['type'] = 'obs_st':
+            if resp['type'] == 'obs_st':
                 mqtt_data = resp['obs'][0]
                 loop_packet['dateTime'] = mqtt_data[0]
                 loop_packet['usUnits'] = weewx.METRICWX
@@ -83,12 +83,13 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['windDir'] = mqtt_data[4]
                 loop_packet['windGust'] = mqtt_data[3]
                 loop_packet['windSpeed'] = mqtt_data[1]
-            elif resp['type'] = 'rapid_wind':
+            elif resp['type'] == 'rapid_wind':
                 mqtt_data = resp['ob']
                 loop_packet['dateTime'] = mqtt_data[0]
                 loop_packet['windSpeed'] = mqtt_data[1]
                 loop_packet['windDir'] = mqtt_data[2]
-            else loginf("Unknown packet type:" + str(resp))
+            else: 
+                loginf("Unknown packet type:" + str(resp))
             
             if loop_packet != {}:
                 try:
