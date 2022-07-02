@@ -16,7 +16,7 @@
 # tempestWS Weewx Driver
 This is a [weewx](https://weewx.com) driver for the [Weatherflow Tempest](https://weatherflow.com/tempest-weather-system/) device.  This version makes use of the [Websocket](https://weatherflow.github.io/Tempest/api/ws.html) API.
 
-The primary use case for this driver is running a weewx server in the cloud so that I don't have to rely on a local device to forward reports to a web server.  Now one fairly inexpensive cloud server can handle both tasks.  I choose the websocket API because it submits more data than querying the REST API, with some exceptions.  If you're interested in retrieving forecast data it would be highly useful.  They have a pretty good [geting started guide](https://weatherflow.github.io/Tempest/api/) that covers a lot of the basics.
+The primary use case for this driver is running a weewx server in the cloud so that I don't have to rely on a local device to forward reports to a web server.  One fairly inexpensive cloud server can handle both tasks.  I choose the websocket API because it submits more data than querying the REST API, with some exceptions.  If you're interested in retrieving forecast data it would be highly useful.  They have a pretty good [geting started guide](https://weatherflow.github.io/Tempest/api/) that covers a lot of the basics.
 
 They also offer a local broadcast [UDP API](https://weatherflow.github.io/Tempest/api/udp/v171/).  This is especially useful for use cases where you might be off-grid and want to capture to a local server.  It also works well with a Raspberry Pi if you like to mess around with that sort of thing.  There are some differences in data available.  For example, I can get the RSSI/signal strength fields this way but not through the websocket or rest API.
 
