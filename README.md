@@ -25,25 +25,25 @@ To install and use this driver you will need to have a personal access token (se
 ## Installation Prerequisites
 This implementation requires the [python websocket-client library](https://pypi.org/project/websocket-client/) to work.  Prior to installing the driver it should be installed.  The command below will work on many systems.
 
-`pip3 install websocket-client`
+    pip3 install websocket-client
 
 In addition this driver has ONLY been tested with python3 and will likely have issues if you attempt to run it on an older implementation.  It's been tested on weewx 4.8.0.
 
 ## Installation Steps
 The [wee_extension](https://www.weewx.com/docs/utilities.htm#wee_extension_utility) utility is the best way to do the installation followed by a [wee_config](https://weewx.com/docs/utilities.htm#wee_config_utility).  You can run it against either a zip, gz or directory that has been cloned from the github repo.  I find it easiest, since I'm running on a cloud server, to use git to clone the repo.  This has the added benefits of letting you edit and reinstall locally if you'd like.
 
-`git clone https://github.com/livysdad27/tempestWS
-wee_extension --install tempestWS
-wee_config --reconfigure --driver=user.tempestWS --no-prompt`
+    git clone https://github.com/livysdad27/tempestWS
+    wee_extension --install tempestWS
+    wee_config --reconfigure --driver=user.tempestWS --no-prompt
 
 After these steps the driver will be set as the default driver and the configuration options will appear in your weewx.conf.  Upon restarting however weewx will crash because there isn't yet a personal token or device ID in the file.  Now you'll want to open your weewx.conf and edit the stanza below.
 
-`[tempestWS]
-    driver = user.tempestWS
-    personal_token = your_api_token
-    tempest_device_id = your_tempest_device_id
-    tempest_ws_endpoint = wss://ws.weatherflow.com/swd/data
-    rest_sleep_interval = 20`
+    [tempestWS]
+        driver = user.tempestWS
+        personal_token = your_api_token
+        tempest_device_id = your_tempest_device_id
+        tempest_ws_endpoint = wss://ws.weatherflow.com/swd/data
+        rest_sleep_interval = 20
 
 * Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [geting started guide](https://weatherflow.github.io/Tempest/api/).
 * Replace the `your_tempest_device_id` with the device id that you found in the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) or in your web application (settings -> stations -> your station name -> status options).
