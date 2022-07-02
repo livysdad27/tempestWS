@@ -30,7 +30,7 @@ This implementation requires the [python websocket-client library](https://pypi.
 In addition this driver has ONLY been tested with python3 and will likely have issues if you attempt to run it on an older implementation.  It's been tested on weewx 4.8.0.
 
 ## Installation Steps
-The [wee_extension](https://www.weewx.com/docs/utilities.htm#wee_extension_utility) utility is the best way to do the installation followed by a [wee_config](https://weewx.com/docs/utilities.htm#wee_config_utility).  You can run it against either a zip, gz or directory that has been cloned from the github repo.  I find it easiest, since I'm running on a cloud server, to use git to clone the repo.  This has the added benefits of letting you edit and reinstall locally if you'd like.
+The [wee_extension](https://www.weewx.com/docs/utilities.htm#wee_extension_utility) utility is the best way to do the installation followed by a [wee_config](https://weewx.com/docs/utilities.htm#wee_config_utility).  You can run it against either a zip, gz or directory that has been cloned from the github repo.  I find it easiest, since I'm running on a cloud server, to use git to clone the repo.  This has the added benefits of letting you edit and reinstall locally if you'd like.  If you decide to use a zip or gz file replace `tempestWS` in the second line with `tempestWS.zip` or `tempestWS.gz` as needed.
 
     git clone https://github.com/livysdad27/tempestWS
     wee_extension --install tempestWS
