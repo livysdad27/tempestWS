@@ -10,7 +10,7 @@ import syslog
 import getopt
 
 DRIVER_VERSION = "0.5"
-HARDWARE_NAME = "Weatherflow Tempest"
+HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
 
 def loader(config_dict, engine):
