@@ -9,7 +9,7 @@ import weeutil.weeutil
 import syslog
 import getopt
 
-DRIVER_VERSION = "0.5"
+DRIVER_VERSION = "0.7"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
 
