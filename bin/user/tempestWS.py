@@ -96,4 +96,4 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 try:
                     yield loop_packet
                 except BaseException as err:
-                    logerr('Could not submit loop packet' + err)
+                    logerr('Could not submit loop packet' + str(err))
