@@ -1,7 +1,6 @@
-This is the readme.md for the Weatherflow Tempest driver that works via it's websocket API
-Copyright (C) 2022 - Billy Jackson
+    tempestWS readme.md Copyright (C) 2022 - Billy Jackson
 
-This program is free software: you can redistribute it and/or modify
+    This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
