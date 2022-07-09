@@ -84,7 +84,11 @@ class tempestWS(weewx.drivers.AbstractDevice):
         while True:
             loop_packet = {}
             mqtt_data = []
-            resp = json.loads(ws.recv())
+            try:
+                resp = json.loads(ws.recv())
+            except ValueError:
+                logerr("Bad message received " + str(resp))
+
             if resp['type'] == 'obs_st':
                 mqtt_data = resp['obs'][0]
                 loop_packet['dateTime'] = mqtt_data[0]
@@ -111,7 +115,4 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loginf("Unknown packet type:" + str(resp))
             
             if loop_packet != {}:
-                try:
-                    yield loop_packet
-                except BaseException as err:
-                    logerr('Could not submit loop packet' + str(err))
+                yield loop_packet
