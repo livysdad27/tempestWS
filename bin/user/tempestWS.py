@@ -27,25 +27,44 @@ import weeutil.weeutil
 import syslog
 import getopt
 
-DRIVER_VERSION = "0.7"
+try:
+    # Test for new-style weewx logging by trying to import weeutil.logger
+    import weeutil.logger
+    import logging
+    log = logging.getLogger(__name__)
+
+    def logdbg(msg):
+        log.debug(msg)
+
+    def loginf(msg):
+        log.info(msg)
+
+    def logerr(msg):
+        log.error(msg)
+
+except ImportError:
+    # Old-style weewx logging
+    import syslog
+
+    def logmsg(level, msg):
+        syslog.syslog(level, 'tempestAPI: %s:' % msg)
+
+    def logdbg(msg):
+        logmsg(syslog.LOG_DEBUG, msg)
+
+    def loginf(msg):
+        logmsg(syslog.LOG_INFO, msg)
+
+    def logerr(msg):
+        logmsg(syslog.LOG_ERR, msg)
+
+
+DRIVER_VERSION = "0.8"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
 
 def loader(config_dict, engine):
     return tempestWS(**config_dict[DRIVER_NAME])
-
-# These are some handy syslog functions. 
-def logmsg(level, msg):
-    syslog.syslog(level, 'tempestAPI: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
 
 # Inherit and initiate the class.  The station_id param isn't used currently but I left
 # it in just in case it's useful to pull that data also.
@@ -58,44 +77,44 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._rest_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
 
+        # Connect to the websocket URI/endpoint prior to starting the main loop.
+        self.ws = create_connection(self._ws_uri)
+        resp = ws.recv()
+        loginf(resp)
+
     def hardware_name(self):
         return HARDWARE_NAME
 
     def closePort(self):
         # Shut down the events if the driver is closed.
-        ws.send('{"type":"listen_rapid_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_stop"}')
-        resp = ws.recv()
+        self.ws.send('{"type":"listen_rapid_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_stop"}')
+        resp = self.ws.recv()
         loginf(resp)
 
-        ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
-        resp = ws.recv()
+        self.ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
+        resp = self.ws.recv()
         loginf(resp)
 
     # This is where the loop packets are made via a call to the rest API endpoint
     def genLoopPackets(self):
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
 
-        # Connect to the websocket URI/endpoint prior to starting the main loop.
-        ws = create_connection(self._ws_uri)
-        resp = ws.recv()
-        loginf(resp)
-
         # Fire up the listen_start and listen_rapid_start message types.  Rapid wind
         # provides the frequent wind direction/speed updates.  Listen_start gives you the 
         # summary and most importantly for this driver, the mqtt_data in the obs list.
-        ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
-        resp = ws.recv()
+        self.ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
+        resp = self.ws.recv()
         loginf(resp)
 
-        ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
-        resp = ws.recv()
+        self.ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
+        resp = self.ws.recv()
         loginf(resp)
 
         while True:
             loop_packet = {}
             mqtt_data = []
             try:
-                resp = json.loads(ws.recv())
+                resp = json.loads(self.ws.recv())
             except ValueError:
                 logerr("Bad message received " + str(resp))
 
