@@ -98,13 +98,14 @@ class tempestWS(weewx.drivers.AbstractDevice):
 
     def closePort(self):
         # Shut down the events if the driver is closed.
+        loginf("Stopping messages and closing websocket")
         self.ws.send('{"type":"listen_rapid_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_stop"}')
         resp = self.ws.recv()
         loginf("Listen_rapid_stop response:" + str(resp))
-
         self.ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
         resp = self.ws.recv()
         loginf("Listen_stop response:" + str(resp))
+        self.ws.close()
         
 
     # This is where the loop packets are made via a call to the rest API endpoint
