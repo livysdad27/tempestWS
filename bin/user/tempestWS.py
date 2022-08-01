@@ -41,6 +41,8 @@ try:
 
     def logerr(msg):
         log.error(msg)
+    
+    loginf("Using new-style logging!")
 
 except ImportError:
     # Old-style weewx logging
@@ -57,6 +59,8 @@ except ImportError:
 
     def logerr(msg):
         logmsg(syslog.LOG_ERR, msg)
+    
+    loginf("Using old-style logging.")
 
 
 DRIVER_VERSION = "0.8"
