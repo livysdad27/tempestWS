@@ -79,7 +79,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
 
         # Connect to the websocket URI/endpoint prior to starting the main loop.
         self.ws = create_connection(self._ws_uri)
-        resp = ws.recv()
+        resp = self.ws.recv()
         loginf(resp)
 
     def hardware_name(self):
@@ -103,12 +103,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # provides the frequent wind direction/speed updates.  Listen_start gives you the 
         # summary and most importantly for this driver, the mqtt_data in the obs list.
         self.ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
-        resp = self.ws.recv()
-        loginf(resp)
-
         self.ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
-        resp = self.ws.recv()
-        loginf(resp)
 
         while True:
             loop_packet = {}
@@ -140,6 +135,8 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['usUnits'] = weewx.METRICWX
                 loop_packet['windSpeed'] = mqtt_data[1]
                 loop_packet['windDir'] = mqtt_data[2]
+            elif resp['type'] == 'ack':
+                loginf("Ack received for command:" + str(resp))
             else: 
                 loginf("Unknown packet type:" + str(resp))
             
