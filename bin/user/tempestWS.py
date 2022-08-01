@@ -81,10 +81,17 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._rest_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
 
-        # Connect to the websocket URI/endpoint prior to starting the main loop.
+        # Connect to the websocket and issue the starting commands for rapid and listen packets.
+        loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
         self.ws = create_connection(self._ws_uri)
         resp = self.ws.recv()
-        loginf(resp)
+        loginf("Connection response:" + str(resp))
+        self.ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
+        resp = self.ws.recv()
+        loginf("Listen_rapid_start response:" + str(resp))
+        self.ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
+        resp = self.ws.recv()
+        loginf("Listen_start response:" + str(resp))
 
     def hardware_name(self):
         return HARDWARE_NAME
@@ -93,22 +100,15 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Shut down the events if the driver is closed.
         self.ws.send('{"type":"listen_rapid_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_stop"}')
         resp = self.ws.recv()
-        loginf(resp)
+        loginf("Listen_rapid_stop response:" + str(resp))
 
         self.ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
         resp = self.ws.recv()
-        loginf(resp)
+        loginf("Listen_stop response:" + str(resp))
+        
 
     # This is where the loop packets are made via a call to the rest API endpoint
     def genLoopPackets(self):
-        loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
-
-        # Fire up the listen_start and listen_rapid_start message types.  Rapid wind
-        # provides the frequent wind direction/speed updates.  Listen_start gives you the 
-        # summary and most importantly for this driver, the mqtt_data in the obs list.
-        self.ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
-        self.ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
-
         while True:
             loop_packet = {}
             mqtt_data = []
