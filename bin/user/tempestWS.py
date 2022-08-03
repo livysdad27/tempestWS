@@ -117,6 +117,9 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 resp = json.loads(self.ws.recv())
             except ValueError:
                 logerr("Bad message received " + str(resp))
+            except WebSocketConnectionClosedException:
+                logerr("Caught a closed connection, attempting to reconnect")
+                self.ws.connect(self._ws_uri)
 
             if resp['type'] == 'obs_st':
                 mqtt_data = resp['obs'][0]
