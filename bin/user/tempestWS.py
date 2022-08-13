@@ -16,6 +16,7 @@ This program is free software: you can redistribute it and/or modify
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+import socket
 from websocket import create_connection
 import time
 import json
@@ -49,7 +50,7 @@ except ImportError:
     import syslog
 
     def logmsg(level, msg):
-        syslog.syslog(level, 'tempestAPI: %s:' % msg)
+        syslog.syslog(level, 'tempestWS: %s:' % msg)
 
     def logdbg(msg):
         logmsg(syslog.LOG_DEBUG, msg)
@@ -61,6 +62,16 @@ except ImportError:
         logmsg(syslog.LOG_ERR, msg)
     
     loginf("Using old-style logging.")
+
+# Helper function to send restart commands during connect/reconnect.  This will let me move the
+# check/validation code for a connection and start commands here as a todo
+def send_listen_start_cmds(sock):
+        sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
+        resp = sock.recv()
+        loginf("Listen_rapid_start response:" + str(resp))
+        sock.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
+        resp = sock.recv()
+        loginf("Listen_start response:" + str(resp))
 
 
 DRIVER_VERSION = "0.8"
@@ -78,7 +89,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_device_id = str(cfg_dict.get('tempest_device_id'))
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
-        self._rest_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
+        self._reconnect_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
 
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
@@ -86,12 +97,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self.ws = create_connection(self._ws_uri)
         resp = self.ws.recv()
         loginf("Connection response:" + str(resp))
-        self.ws.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
-        resp = self.ws.recv()
-        loginf("Listen_rapid_start response:" + str(resp))
-        self.ws.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
-        resp = self.ws.recv()
-        loginf("Listen_start response:" + str(resp))
+        send_listen_start_cmds(self.ws)
 
     def hardware_name(self):
         return HARDWARE_NAME
@@ -107,19 +113,29 @@ class tempestWS(weewx.drivers.AbstractDevice):
         loginf("Listen_stop response:" + str(resp))
         self.ws.close()
         
-
     # This is where the loop packets are made via a call to the rest API endpoint
     def genLoopPackets(self):
         while True:
             loop_packet = {}
             mqtt_data = []
+
+            # First, check to see if the connection died and retry if it did
             try:
-                resp = json.loads(self.ws.recv())
-            except ValueError:
-                logerr("Bad message received " + str(resp))
+                raw_resp = self.ws.recv()
             except WebSocketConnectionClosedException:
-                logerr("Caught a closed connection, attempting to reconnect")
+                logerr("Caught a closed connection, attempting to reconnect!")
+                time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
+                resp = self.ws.recv()
+                loginf("Connection response:" + str(resp))
+                send_listen_start_cmds(self.ws)
+                raw_resp = self.ws.recv()
+
+            # Grab the response and check that it's good JSON.
+            try:
+                resp = json.loads(raw_resp)
+            except json.decoder.JSONDecodeError:
+                logerr("Caught a decode error" + str(raw_resp))
 
             if resp['type'] == 'obs_st':
                 mqtt_data = resp['obs'][0]
@@ -143,6 +159,12 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['usUnits'] = weewx.METRICWX
                 loop_packet['windSpeed'] = mqtt_data[1]
                 loop_packet['windDir'] = mqtt_data[2]
+            elif resp['type'] == 'evt_strike':
+                mqtt_data = resp['evt']
+                loop_packet['dateTime'] = mqtt_data[0]
+                loop_packet['usUnits'] = weewx.METRICWX
+                loop_packet['lightening_distance'] = mqtt_data[1]
+                loop_packet['lightening_strike_count'] = mqtt_data[3]
             elif resp['type'] == 'ack':
                 loginf("Ack received for command:" + str(resp))
             else: 

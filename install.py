@@ -36,7 +36,7 @@ class tempestWSInstaller(ExtensionInstaller):
                     'personal_token': 'your_api_token',
                     'tempest_device_id': 'your_tempest_device_id',
                     'tempest_ws_endpoint': 'wss://ws.weatherflow.com/swd/data',                        
-                    'rest_sleep_interval': '20'
+                    'reconnect_sleep_interval': '20'
                 },
             }
         )
