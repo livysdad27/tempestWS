@@ -65,11 +65,11 @@ except ImportError:
 
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
-def send_listen_start_cmds(sock):
-        sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_start"}')
+def send_listen_start_cmds(sock, dev_id):
+        sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
         resp = sock.recv()
         loginf("Listen_rapid_start response:" + str(resp))
-        sock.send('{"type":"listen_start",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_start"}')
+        sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
         resp = sock.recv()
         loginf("Listen_start response:" + str(resp))
 
@@ -89,7 +89,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_device_id = str(cfg_dict.get('tempest_device_id'))
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
-        self._reconnect_sleep_interval = int(cfg_dict.get('rest_sleep_interval'))
+        self._reconnect_sleep_interval = int(cfg_dict.get('reconnect_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
 
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
@@ -97,7 +97,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self.ws = create_connection(self._ws_uri)
         resp = self.ws.recv()
         loginf("Connection response:" + str(resp))
-        send_listen_start_cmds(self.ws)
+        send_listen_start_cmds(self.ws, self._tempest_device_id)
 
     def hardware_name(self):
         return HARDWARE_NAME
@@ -128,7 +128,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 self.ws.connect(self._ws_uri)
                 resp = self.ws.recv()
                 loginf("Connection response:" + str(resp))
-                send_listen_start_cmds(self.ws)
+                send_listen_start_cmds(self.ws, self._tempest_device_id)
                 raw_resp = self.ws.recv()
 
             # Grab the response and check that it's good JSON.
