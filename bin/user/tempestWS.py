@@ -18,6 +18,7 @@ This program is free software: you can redistribute it and/or modify
 
 import socket
 from websocket import create_connection
+from websocket._exceptions import WebSocketConnectionClosedException
 import time
 import json
 import weewx.drivers
