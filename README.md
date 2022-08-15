@@ -43,10 +43,11 @@ After these steps the driver will be set as the default driver and the configura
         personal_token = your_api_token
         tempest_device_id = your_tempest_device_id
         tempest_ws_endpoint = wss://ws.weatherflow.com/swd/data
-        rest_sleep_interval = 20
+        restart_sleep_interval = 20
 
 * Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [geting started guide](https://weatherflow.github.io/Tempest/api/).
 * Replace the `your_tempest_device_id` with the device id that you found in the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) or in your web application (settings -> stations -> your station name -> status options).
+* Note that the restart_sleep_interval tells the driver how long to wait if a connection to the websocket server died before reconnecting (in seconds).  You can adjust this as needed.
 
 Restart weewx and you should be on your way!
 
@@ -55,5 +56,5 @@ I welcome pull requests or recommendations.  I ask that if you submit a pull req
 
 * Think through branching and clearer guidelines for pull requests.  
 * Continue exploring if the wee_extension can reord the config stanza like it does with skins.
-* Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.
+* -Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.-
 
