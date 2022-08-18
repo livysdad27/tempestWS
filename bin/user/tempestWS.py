@@ -82,7 +82,7 @@ DRIVER_NAME = "tempestWS"
 def loader(config_dict, engine):
     return tempestWS(**config_dict[DRIVER_NAME])
 
-# Inherit and initiate the class.  The station_id param isn't used currently but I left
+# Inherit and initiate the class.  The sleep interval param isn't used currently but I left
 # it in just in case it's useful to pull that data also.
 class tempestWS(weewx.drivers.AbstractDevice):
     def __init__(self, **cfg_dict):
