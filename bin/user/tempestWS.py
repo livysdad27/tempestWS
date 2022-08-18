@@ -173,3 +173,20 @@ class tempestWS(weewx.drivers.AbstractDevice):
             
             if loop_packet != {}:
                 yield loop_packet
+
+# To test this driver, run it directly as follows:
+#   PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/fileparse.py
+if __name__ == "__main__":
+    import weewx
+    import weeutil.weeutil
+    try:
+      import weeutil.logger
+
+      weewx.debug = 1
+      weeutil.logger.setup('tempestWS', {})
+    except:
+      pass
+
+    driver = tempestWS()
+    for packet in driver.genLoopPackets():
+        print(weeutil.weeutil.timestamp_to_string(packet['dateTime']), packet)
