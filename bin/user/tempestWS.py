@@ -175,7 +175,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 yield loop_packet
 
 # To test this driver, run it directly as follows:
-#   PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/fileparse.py
+#   PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/tempestWS.py
 if __name__ == "__main__":
     import weewx
     import weeutil.weeutil
