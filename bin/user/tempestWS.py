@@ -64,6 +64,9 @@ except ImportError:
     
     loginf("Using old-style logging.")
 
+class TooManyRetries(Exception):
+  logerr("Too Many Retries Exception") 
+
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
 def send_listen_start_cmds(sock, dev_id):
@@ -131,7 +134,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                     self.ws.connect(self._ws_uri)
                     retries = 0
                     resp = self.ws.recv()
-                    loginf("Connection response:" + str(resp))
+                    loginf("Reconnection response:" + str(resp))
                     send_listen_start_cmds(self.ws, self._tempest_device_id)
                     raw_resp = self.ws.recv()
                 except:
@@ -170,12 +173,13 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['usUnits'] = weewx.METRICWX
                 loop_packet['windSpeed'] = mqtt_data[1]
                 loop_packet['windDir'] = mqtt_data[2]
-            elif resp['type'] == 'evt_strike':
-                mqtt_data = resp['evt']
-                loop_packet['dateTime'] = mqtt_data[0]
-                loop_packet['usUnits'] = weewx.METRICWX
-                loop_packet['lightening_distance'] = mqtt_data[1]
-                loop_packet['lightening_strike_count'] = mqtt_data[3]
+            #This code commented out until I can test with a storm.
+            # elif resp['type'] == 'evt_strike':
+            #    mqtt_data = resp['evt']
+            #    loop_packet['dateTime'] = mqtt_data[0]
+            #    loop_packet['usUnits'] = weewx.METRICWX
+            #    loop_packet['lightening_distance'] = mqtt_data[1]
+            #    loop_packet['lightening_strike_count'] = mqtt_data[3]
             elif resp['type'] == 'ack':
                 loginf("Ack received for command:" + str(resp))
             else: 
