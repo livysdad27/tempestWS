@@ -116,6 +116,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         
     # This is where the loop packets are made via a call to the rest API endpoint
     def genLoopPackets(self):
+        retries = 0
         while True:
             loop_packet = {}
             mqtt_data = []
@@ -126,11 +127,20 @@ class tempestWS(weewx.drivers.AbstractDevice):
             except WebSocketConnectionClosedException:
                 logerr("Caught a closed connection, attempting to reconnect!")
                 time.sleep(self._reconnect_sleep_interval)
-                self.ws.connect(self._ws_uri)
-                resp = self.ws.recv()
-                loginf("Connection response:" + str(resp))
-                send_listen_start_cmds(self.ws, self._tempest_device_id)
-                raw_resp = self.ws.recv()
+                try:
+                    self.ws.connect(self._ws_uri)
+                    retries = 0
+                    resp = self.ws.recv()
+                    loginf("Connection response:" + str(resp))
+                    send_listen_start_cmds(self.ws, self._tempest_device_id)
+                    raw_resp = self.ws.recv()
+                except:
+                    if retries > 9:
+                        logerr("Ran out of reconnect retries!")
+                        raise TooManyRetries
+                    time.sleep(self._reconnect_sleep_interval)
+                    retries += 1
+                    loginf("Reconnect attempt:" + str(retries))
 
             # Grab the response and check that it's good JSON.
             try:
@@ -160,12 +170,12 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['usUnits'] = weewx.METRICWX
                 loop_packet['windSpeed'] = mqtt_data[1]
                 loop_packet['windDir'] = mqtt_data[2]
-            #elif resp['type'] == 'evt_strike':
-            #    mqtt_data = resp['evt']
-            #    loop_packet['dateTime'] = mqtt_data[0]
-            #    loop_packet['usUnits'] = weewx.METRICWX
-            #    loop_packet['lightening_distance'] = mqtt_data[1]
-            #    loop_packet['lightening_strike_count'] = mqtt_data[3]
+            elif resp['type'] == 'evt_strike':
+                mqtt_data = resp['evt']
+                loop_packet['dateTime'] = mqtt_data[0]
+                loop_packet['usUnits'] = weewx.METRICWX
+                loop_packet['lightening_distance'] = mqtt_data[1]
+                loop_packet['lightening_strike_count'] = mqtt_data[3]
             elif resp['type'] == 'ack':
                 loginf("Ack received for command:" + str(resp))
             else: 
@@ -173,3 +183,20 @@ class tempestWS(weewx.drivers.AbstractDevice):
             
             if loop_packet != {}:
                 yield loop_packet
+
+# To test this driver, run it directly as follows:
+#   PYTHONPATH=/home/weewx/bin python /home/weewx/bin/user/tempestWS.py
+if __name__ == "__main__":
+    import weewx
+    import weeutil.weeutil
+    try:
+      import weeutil.logger
+
+      weewx.debug = 1
+      weeutil.logger.setup('tempestWS', {})
+    except:
+      pass
+
+    driver = tempestWS()
+    for packet in driver.genLoopPackets():
+        print(weeutil.weeutil.timestamp_to_string(packet['dateTime']), packet)
