@@ -65,7 +65,7 @@ except ImportError:
     loginf("Using old-style logging.")
 
 class TooManyRetries(Exception):
-  logerr("Too Many Retries Exception") 
+    pass
 
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
