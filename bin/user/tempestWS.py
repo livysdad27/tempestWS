@@ -69,16 +69,19 @@ class TooManyRetries(Exception):
 
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
-def send_listen_start_cmds(sock, dev_id):
+def send_listen_start_cmds(sock, dev_id, stn_id):
         sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
         resp = sock.recv()
         loginf("Listen_rapid_start response:" + str(resp))
         sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
         resp = sock.recv()
         loginf("Listen_start response:" + str(resp))
+        sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
+        resp = sock.recv()
+        loginf("Listen_start_events response:" + str(resp))
 
 
-DRIVER_VERSION = "0.8"
+DRIVER_VERSION = "0.9"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
 
@@ -101,7 +104,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self.ws = create_connection(self._ws_uri)
         resp = self.ws.recv()
         loginf("Connection response:" + str(resp))
-        send_listen_start_cmds(self.ws, self._tempest_device_id)
+        send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
 
     def hardware_name(self):
         return HARDWARE_NAME
@@ -115,6 +118,10 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self.ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
         resp = self.ws.recv()
         loginf("Listen_stop response:" + str(resp))
+        loginf("Listen_stop_events response:" + str(resp))
+        self.ws.send('{"type":"listen_stop_events",' + ' "station_id":' + self._tempest_station_id + ',' + ' "id":"listen_stop_events"}')
+        resp = self.ws.recv()
+        loginf("Listen_stop_events response:" + str(resp))
         self.ws.close()
         
     # This is where the loop packets are made via a call to the rest API endpoint
