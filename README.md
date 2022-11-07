@@ -52,7 +52,7 @@ After these steps the driver will be set as the default driver and the configura
 Restart weewx and you should be on your way!
 
 ### Errata
-* I finally had a storm come through with one lightening strike but the code was still commented out so I don't have a good test.  If there is someone who would like to test this please let me know how it goes!
+* I finally had a storm come through with one lightening strike but the code was still commented out so I don't have a good test.  If there is someone who would like to test this please let me know how it goes!  You could use the test_evt_strike branch for this. It also includes a test of capturing the evt_precip event to log that it started raining.
 * In my logs I do see events for evt_precip and evt_strike but nothing for the device offline links and my device was offline for a good long time during the last windstorm.  Basically, these aren't handled yet AND I don't see them arriving.
 
 ### Todos
