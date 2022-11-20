@@ -139,8 +139,8 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 try:
                     self.ws.connect(self._ws_uri)
                     retries = 0
-                    resp = self.ws.recv()
-                    loginf("Reconnection response:" + str(resp))
+                    resp_conn = self.ws.recv()
+                    loginf("Reconnection response:" + str(resp_conn))
                     send_listen_start_cmds(self.ws, self._tempest_device_id)
                     raw_resp = self.ws.recv()
                 except:
@@ -188,8 +188,14 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 loop_packet['lightening_strike_count'] = mqtt_data[3]
             elif resp['type'] == 'evt_precip':
                 loginf("It started raining.  evt_precip received" + str(resp))
-            elif resp['type'] == 'ack':
-                loginf("Ack received for command:" + str(resp))
+            elif resp['type'] == 'evt_station_offline':
+                loginf("Station offline event detected" +str(resp))
+            elif resp['type'] == 'evt_station_online':
+                loginf("Station online event detected" +str(resp))
+            elif resp['type'] == 'evt_device_offline':
+                loginf("Device offline event detected" +str(resp))
+            elif resp['type'] == 'evt_device_online':
+                loginf("Device online event detected" +str(resp))
             else: 
                 loginf("Unknown packet type:" + str(resp))
             
