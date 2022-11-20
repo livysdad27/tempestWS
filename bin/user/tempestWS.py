@@ -71,14 +71,14 @@ class TooManyRetries(Exception):
 # check/validation code for a connection and start commands here as a todo
 def send_listen_start_cmds(sock, dev_id, stn_id):
         sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
-        resp = sock.recv()
-        loginf("Listen_rapid_start response:" + str(resp))
+        resp_listen_rapid_start = sock.recv()
+        loginf("Listen_rapid_start response:" + str(resp_listen_rapid_start))
         sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
-        resp = sock.recv()
-        loginf("Listen_start response:" + str(resp))
+        resp_listen_start = sock.recv()
+        loginf("Listen_start response:" + str(resp_listen_start))
         sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
-        resp = sock.recv()
-        loginf("Listen_start_events response:" + str(resp))
+        resp_listen_start_events = sock.recv()
+        loginf("Listen_start_events response:" + str(resp_listen_start_events))
 
 
 DRIVER_VERSION = "0.9"
@@ -102,8 +102,8 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
         self.ws = create_connection(self._ws_uri)
-        resp = self.ws.recv()
-        loginf("Connection response:" + str(resp))
+        resp_conn = self.ws.recv()
+        loginf("Connection response:" + str(resp_conn))
         send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
 
     def hardware_name(self):
@@ -113,15 +113,14 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Shut down the events if the driver is closed.
         loginf("Stopping messages and closing websocket")
         self.ws.send('{"type":"listen_rapid_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_rapid_stop"}')
-        resp = self.ws.recv()
-        loginf("Listen_rapid_stop response:" + str(resp))
+        resp_listen_rapid_stop = self.ws.recv()
+        loginf("Listen_rapid_stop response:" + str(resp_listen_rapid_stop))
         self.ws.send('{"type":"listen_stop",' + ' "device_id":' + self._tempest_device_id + ',' + ' "id":"listen_stop"}')
-        resp = self.ws.recv()
-        loginf("Listen_stop response:" + str(resp))
-        loginf("Listen_stop_events response:" + str(resp))
+        resp_listen_stop = self.ws.recv()
+        loginf("Listen_stop response:" + str(resp_listen_stop))
         self.ws.send('{"type":"listen_stop_events",' + ' "station_id":' + self._tempest_station_id + ',' + ' "id":"listen_stop_events"}')
-        resp = self.ws.recv()
-        loginf("Listen_stop_events response:" + str(resp))
+        resp_listen_events_stop = self.ws.recv()
+        loginf("Listen_stop_events response:" + str(resp_listen_events_stop))
         self.ws.close()
         
     # This is where the loop packets are made via a call to the rest API endpoint
