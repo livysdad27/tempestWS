@@ -68,13 +68,14 @@ class TooManyRetries(Exception):
     pass
 
 # Helper function to see if our start commands return good data.  
-def checkResponse(cmd_resp):
+def check_cmd_response(cmd_resp):
     if cmd_resp == "":
-        loginf("Null response from the websocket, is something awry?")
+        logerr("Null response from the websocket, is something awry?")
     try:
         resp = json.loads(cmd_resp)
     except json.decoder.JSONDecodeError:
         logerr("Caught a decode error during a checkResponse")
+
     if "type" in resp:
         if resp["type"] == 'connection_opened':
             loginf("Successfully received open connection response!")
@@ -88,11 +89,11 @@ def checkResponse(cmd_resp):
 # check/validation code for a connection and start commands here as a todo
 def send_listen_start_cmds(sock, dev_id, stn_id):
     sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
-    checkResponse(sock.recv())
+    check_cmd_response(sock.recv())
     sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
-    checkResponse(sock.recv())
+    check_cmd_response(sock.recv())
     sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
-    checkResponse(sock.recv())
+    check_cmd_response(sock.recv())
 
 
 DRIVER_VERSION = "0.9"
@@ -116,7 +117,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
         self.ws = create_connection(self._ws_uri)
-        checkResponse(self.ws.recv())
+        check_cmd_response(self.ws.recv())
         send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
 
     def hardware_name(self):
@@ -146,18 +147,20 @@ class tempestWS(weewx.drivers.AbstractDevice):
             # First, check to see if the connection died and retry if it did
             try:
                 raw_resp = self.ws.recv()
+                if raw_resp == "":
+                    logerr("Caught a null response in the genLoopPackets loop.  Restarting loop.")
+                    continue
             except WebSocketConnectionClosedException:
                 logerr("Caught a closed connection, attempting to reconnect!")
                 time.sleep(self._reconnect_sleep_interval)
                 try:
                     self.ws.connect(self._ws_uri)
-                    retries = 0
-                    resp_conn = self.ws.recv()
-                    loginf("Reconnection response:" + str(resp_conn))
+                    check_cmd_response(self.ws.recv())
                     send_listen_start_cmds(self.ws, self._tempest_device_id)
-                    raw_resp = self.ws.recv()
+                    retries = 0
+                    continue
                 except:
-                    if retries > 9:
+                    if retries > 100:
                         logerr("Ran out of reconnect retries!")
                         raise TooManyRetries
                     time.sleep(self._reconnect_sleep_interval)
@@ -168,51 +171,50 @@ class tempestWS(weewx.drivers.AbstractDevice):
             try:
                 resp = json.loads(raw_resp)
             except json.decoder.JSONDecodeError:
-                if raw_resp == "":
-                    logerr("Caught a null raw_resp from the websocket")
-                logerr("Caught a decode error " + str(raw_resp))
-
-            if resp['type'] == 'obs_st':
-                mqtt_data = resp['obs'][0]
-                loop_packet['dateTime'] = mqtt_data[0]
-                loop_packet['usUnits'] = weewx.METRICWX
-                loop_packet['outTemp'] = mqtt_data[7]
-                loop_packet['outHumidity'] = mqtt_data[8]
-                loop_packet['pressure'] = mqtt_data[6]
-                loop_packet['supplyVoltage'] = mqtt_data[16]
-                loop_packet['radiation'] = mqtt_data[11]
-                loop_packet['rain'] = mqtt_data[19]
-                loop_packet['UV'] = mqtt_data[10]
-                loop_packet['lightening_distance'] = mqtt_data[14]
-                loop_packet['lightening_strike_count'] = mqtt_data[15]
-                loop_packet['windDir'] = mqtt_data[4]
-                loop_packet['windGust'] = mqtt_data[3]
-                loop_packet['windSpeed'] = mqtt_data[1]
-            elif resp['type'] == 'rapid_wind':
-                mqtt_data = resp['ob']
-                loop_packet['dateTime'] = mqtt_data[0]
-                loop_packet['usUnits'] = weewx.METRICWX
-                loop_packet['windSpeed'] = mqtt_data[1]
-                loop_packet['windDir'] = mqtt_data[2]
-            #The evt_precip and evt_strike code below is a test.
-            elif resp['type'] == 'evt_strike':
-                mqtt_data = resp['evt']
-                loop_packet['dateTime'] = mqtt_data[0]
-                loop_packet['usUnits'] = weewx.METRICWX
-                loop_packet['lightening_distance'] = mqtt_data[1]
-                loop_packet['lightening_strike_count'] = mqtt_data[3]
-            elif resp['type'] == 'evt_precip':
-                loginf("It started raining.  evt_precip received" + str(resp))
-            elif resp['type'] == 'evt_station_offline':
-                loginf("Station offline event detected" +str(resp))
-            elif resp['type'] == 'evt_station_online':
-                loginf("Station online event detected" +str(resp))
-            elif resp['type'] == 'evt_device_offline':
-                loginf("Device offline event detected" +str(resp))
-            elif resp['type'] == 'evt_device_online':
-                loginf("Device online event detected" +str(resp))
+                logerr("Caught a decode error, restarting loop, data follows: " + str(raw_resp))
+                continue
+            if "type" in resp:
+                if resp['type'] == 'obs_st':
+                    mqtt_data = resp['obs'][0]
+                    loop_packet['dateTime'] = mqtt_data[0]
+                    loop_packet['usUnits'] = weewx.METRICWX
+                    loop_packet['outTemp'] = mqtt_data[7]
+                    loop_packet['outHumidity'] = mqtt_data[8]
+                    loop_packet['pressure'] = mqtt_data[6]
+                    loop_packet['supplyVoltage'] = mqtt_data[16]
+                    loop_packet['radiation'] = mqtt_data[11]
+                    loop_packet['rain'] = mqtt_data[19]
+                    loop_packet['UV'] = mqtt_data[10]
+                    loop_packet['lightening_distance'] = mqtt_data[14]
+                    loop_packet['lightening_strike_count'] = mqtt_data[15]
+                    loop_packet['windDir'] = mqtt_data[4]
+                    loop_packet['windGust'] = mqtt_data[3]
+                    loop_packet['windSpeed'] = mqtt_data[1]
+                elif resp['type'] == 'rapid_wind':
+                    mqtt_data = resp['ob']
+                    loop_packet['dateTime'] = mqtt_data[0]
+                    loop_packet['usUnits'] = weewx.METRICWX
+                    loop_packet['windSpeed'] = mqtt_data[1]
+                    loop_packet['windDir'] = mqtt_data[2]
+                #The evt_precip and evt_strike code below is a test.
+                elif resp['type'] == 'evt_strike':
+                    mqtt_data = resp['evt']
+                    loop_packet['dateTime'] = mqtt_data[0]
+                    loop_packet['usUnits'] = weewx.METRICWX
+                    loop_packet['lightening_distance'] = mqtt_data[1]
+                    loop_packet['lightening_strike_count'] = mqtt_data[3]
+                elif resp['type'] == 'evt_precip':
+                    loginf("It started raining.  evt_precip received" + str(resp))
+                elif resp['type'] == 'evt_station_offline':
+                    loginf("Station offline event detected" +str(resp))
+                elif resp['type'] == 'evt_station_online':
+                    loginf("Station online event detected" +str(resp))
+                elif resp['type'] == 'evt_device_offline':
+                    loginf("Device offline event detected" +str(resp))
+                elif resp['type'] == 'evt_device_online':
+                    loginf("Device online event detected" +str(resp))
             else: 
-                loginf("Unknown packet type:" + str(resp))
+                loginf("Unknown message has no type: " + str(resp))
             
             if loop_packet != {}:
                 yield loop_packet
