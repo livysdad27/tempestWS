@@ -67,18 +67,32 @@ except ImportError:
 class TooManyRetries(Exception):
     pass
 
+# Helper function to see if our start commands return good data.  
+def checkResponse(cmd_resp):
+    if cmd_resp == "":
+        loginf("Null response from the websocket, is something awry?")
+    try:
+        resp = json.loads(cmd_resp)
+    except json.decoder.JSONDecodeError:
+        logerr("Caught a decode error during a checkResponse")
+    if "type" in resp:
+        if resp["type"] == 'connection_opened':
+            loginf("Successfully received open connection response!")
+        if resp["type"] == 'ack':
+            loginf ("Received a positive ack response for " + str(resp["id"]))
+    if "status" in resp:
+        if resp["status"]["status_message"] == "SUCCESS":
+            loginf("SUCCESS response from listen_start_events message.")
+
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
 def send_listen_start_cmds(sock, dev_id, stn_id):
-        sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
-        resp_listen_rapid_start = sock.recv()
-        loginf("Listen_rapid_start response:" + str(resp_listen_rapid_start))
-        sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
-        resp_listen_start = sock.recv()
-        loginf("Listen_start response:" + str(resp_listen_start))
-        sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
-        resp_listen_start_events = sock.recv()
-        loginf("Listen_start_events response:" + str(resp_listen_start_events))
+    sock.send('{"type":"listen_rapid_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_rapid_start"}')
+    checkResponse(sock.recv())
+    sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
+    checkResponse(sock.recv())
+    sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
+    checkResponse(sock.recv())
 
 
 DRIVER_VERSION = "0.9"
@@ -102,8 +116,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
         self.ws = create_connection(self._ws_uri)
-        resp_conn = self.ws.recv()
-        loginf("Connection response:" + str(resp_conn))
+        checkResponse(self.ws.recv())
         send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
 
     def hardware_name(self):
@@ -155,7 +168,9 @@ class tempestWS(weewx.drivers.AbstractDevice):
             try:
                 resp = json.loads(raw_resp)
             except json.decoder.JSONDecodeError:
-                logerr("Caught a decode error" + str(raw_resp))
+                if raw_resp == "":
+                    logerr("Caught a null raw_resp from the websocket")
+                logerr("Caught a decode error " + str(raw_resp))
 
             if resp['type'] == 'obs_st':
                 mqtt_data = resp['obs'][0]
