@@ -79,11 +79,14 @@ def check_cmd_response(cmd_resp):
     if "type" in resp:
         if resp["type"] == 'connection_opened':
             loginf("Successfully received open connection response!")
-        if resp["type"] == 'ack':
+        elif resp["type"] == 'ack':
             loginf ("Received a positive ack response for " + str(resp["id"]))
-    if "status" in resp:
+    elif "status" in resp:
         if resp["status"]["status_message"] == "SUCCESS":
             loginf("SUCCESS response from listen_start_events message.")
+    else:
+        logerr("I don't recognize this at all: " + str(resp))
+    
 
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
@@ -154,6 +157,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 logerr("Caught a closed connection, attempting to reconnect!")
                 time.sleep(self._reconnect_sleep_interval)
                 try:
+                    self.ws.close()
                     self.ws.connect(self._ws_uri)
                     check_cmd_response(self.ws.recv())
                     send_listen_start_cmds(self.ws, self._tempest_device_id)
