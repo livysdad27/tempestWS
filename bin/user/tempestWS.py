@@ -157,7 +157,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
                 check_cmd_response(self.ws.recv())
-                send_listen_start_cmds(self.ws, self._tempest_device_id)
+                send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
                 retries = 0
                 continue
 
