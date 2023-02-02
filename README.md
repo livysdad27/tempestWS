@@ -58,6 +58,8 @@ Restart weewx and you should be on your way!
 ### Todos
 I welcome pull requests or recommendations.  I ask that if you submit a pull request you include at least what versions of python and weewx you've tested on along with the operating system so that we can track what works where.  If you find issues please log them [here](https://github.com/livysdad27/tempestWS/issues).
 
+* Setup github actions to automate CI/CD and testing.
+* Fix the retries counter and check for connection failure issues.
 * Think through branching and clearer guidelines for pull requests.  
 * Continue exploring if the wee_extension can reord the config stanza like it does with skins.
 * ~~Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.~~
