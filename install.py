@@ -24,7 +24,7 @@ def loader():
 class tempestWSInstaller(ExtensionInstaller):
     def __init__(self):
         super(tempestWSInstaller, self).__init__(
-            version=".8",
+            version=".9",
             name='tempestWS',
             description='Weatherflow Tempest Websocket Driver installer',
             author="Billy Jackson",
@@ -35,6 +35,7 @@ class tempestWSInstaller(ExtensionInstaller):
                     'driver' : 'bin.user.tempestWS',
                     'personal_token': 'your_api_token',
                     'tempest_device_id': 'your_tempest_device_id',
+                    'tempest_station_id': 'your_tempest_station_id',
                     'tempest_ws_endpoint': 'wss://ws.weatherflow.com/swd/data',                        
                     'reconnect_sleep_interval': '20'
                 },
