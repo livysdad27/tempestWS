@@ -152,13 +152,13 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 raw_resp = self.ws.recv()
                 if raw_resp == "":
                     logerr("Caught a null response in the genLoopPackets loop.")
-            except WebSocketConnectionClosedException:
-                logerr("Caught a closed connection, attempting to reconnect!  Try " +str(retries))
+            except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
+                logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
                 check_cmd_response(self.ws.recv())
                 send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
-                retries = 0
+                retries += 1
                 continue
 
             # Grab the response and check that it's good JSON.
