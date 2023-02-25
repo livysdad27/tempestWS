@@ -20,14 +20,14 @@ The primary use case for this driver is running a weewx server in the cloud so t
 
 They also offer a local broadcast [UDP API](https://weatherflow.github.io/Tempest/api/udp/v171/).  This is especially useful for use cases where you might be off-grid and want to capture to a local server.  It also works well with a Raspberry Pi if you like to mess around with that sort of thing.  There are some differences in data available.  For example, I can get the RSSI/signal strength fields this way but not through the websocket or rest API.  If you're intersted in running in this mode I highly recommend the [weatherflow-udp](https://github.com/captain-coredump/weatherflow-udp) driver by captain-coredump.  I've run this setup for several months and it works really well.
 
-To install and use this driver you will need to have a personal access token (see the [geting started guide](https://weatherflow.github.io/Tempest/api/)) and your device ID.  Note that your device ID is different than the ST number or the station ID. You may see in your device's website or mobile application.  You can find this under the settings -> stations -> your station name -> status options in your app.  Alternately once you're familiar witht the API you can get a token, authorize the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) and find the device ID in the output of the /stations endpoint. 
+To install and use this driver you will need to have a personal access token (see the [geting started guide](https://weatherflow.github.io/Tempest/api/)) and your device ID.  Note that your device ID is different than the ST number or the station ID ou may see in your device's website or mobile application.  You can find the correct id under the settings -> stations -> your station name -> status options in your app.  Alternately once you're familiar witht the API you can get a token, authorize the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) and find the device ID in the output of the /stations endpoint. 
 
 ## Installation Prerequisites
 This implementation requires the [python websocket-client library](https://pypi.org/project/websocket-client/) to work.  Prior to installing the driver it should be installed.  The command below will work on many systems.
 
     pip3 install websocket-client
 
-In addition this driver has ONLY been tested with python3 and will likely have issues if you attempt to run it on an older implementation.  It's been tested on weewx 4.8.0.
+In addition this driver has ONLY been tested with python3 and will likely have issues if you attempt to run it on an older implementation.  It's been tested on weewx 4.8 and at least one 4.10 implementation.
 
 ## Installation Steps
 The [wee_extension](https://www.weewx.com/docs/utilities.htm#wee_extension_utility) utility is the best way to do the installation followed by a [wee_config](https://weewx.com/docs/utilities.htm#wee_config_utility).  You can run it against either a zip, gz or directory that has been cloned from the github repo.  I find it easiest, since I'm running on a cloud server, to use git to clone the repo.  This has the added benefits of letting you edit and reinstall locally if you'd like.  If you decide to use a zip or gz file replace `tempestWS` in the second line with `tempestWS.zip` or `tempestWS.gz` as needed.
@@ -59,7 +59,8 @@ Restart weewx and you should be on your way!
 I welcome pull requests or recommendations.  I ask that if you submit a pull request you include at least what versions of python and weewx you've tested on along with the operating system so that we can track what works where.  If you find issues please log them [here](https://github.com/livysdad27/tempestWS/issues).
 
 * Setup github actions to automate CI/CD and testing.
-* Fix the retries counter and check for connection failure issues.
+* Auto-increment driver version upon merge to main.
+* -Fix the retries counter and check for connection failure issues.-
 * Think through branching and clearer guidelines for pull requests.  
 * Continue exploring if the wee_extension can reord the config stanza like it does with skins.
 * ~~Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.~~
