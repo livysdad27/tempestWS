@@ -60,7 +60,7 @@ I welcome pull requests or recommendations.  I ask that if you submit a pull req
 
 * Setup github actions to automate CI/CD and testing.
 * Auto-increment driver version upon merge to main.
-* -Fix the retries counter and check for connection failure issues.-
+* ~~Fix the retries counter and check for connection failure issues.~~
 * Think through branching and clearer guidelines for pull requests.  
 * Continue exploring if the wee_extension can reord the config stanza like it does with skins.
 * ~~Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.~~
