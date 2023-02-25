@@ -19,6 +19,7 @@ This program is free software: you can redistribute it and/or modify
 import socket
 from websocket import create_connection
 from websocket._exceptions import WebSocketConnectionClosedException
+from websocket._exceptions import WebSocketTimeoutException
 import time
 import json
 import weewx.drivers
@@ -99,9 +100,12 @@ def send_listen_start_cmds(sock, dev_id, stn_id):
     check_cmd_response(sock.recv())
 
 
-DRIVER_VERSION = "0.9"
+DRIVER_VERSION = "1.0"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
+
+# Spit out the version info for troubleshooting purposes.  Need to remember to bunp versions.
+loginf("Loading " + DRIVER_NAME + " " + HARDWARE_NAME + " " + DRIVER_VERSION)
 
 def loader(config_dict, engine):
     return tempestWS(**config_dict[DRIVER_NAME])
@@ -152,13 +156,13 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 raw_resp = self.ws.recv()
                 if raw_resp == "":
                     logerr("Caught a null response in the genLoopPackets loop.")
-            except WebSocketConnectionClosedException:
-                logerr("Caught a closed connection, attempting to reconnect!  Try " +str(retries))
+            except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
+                logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
                 check_cmd_response(self.ws.recv())
                 send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
-                retries = 0
+                retries += 1
                 continue
 
             # Grab the response and check that it's good JSON.
