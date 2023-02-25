@@ -100,9 +100,12 @@ def send_listen_start_cmds(sock, dev_id, stn_id):
     check_cmd_response(sock.recv())
 
 
-DRIVER_VERSION = "0.9"
+DRIVER_VERSION = "1.0"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
+
+# Spit out the version info for troubleshooting purposes.  Need to remember to bunp versions.
+loginf("Loading " + DRIVER_NAME + " " + HARDWARE_NAME + " " + DRIVER_VERSION)
 
 def loader(config_dict, engine):
     return tempestWS(**config_dict[DRIVER_NAME])
