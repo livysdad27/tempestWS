@@ -119,7 +119,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
         self._reconnect_sleep_interval = int(cfg_dict.get('reconnect_sleep_interval'))
-        self._ws_uri=self._tempest_ws_endpoint + '?api_key=' + self._personal_token
+        self._ws_uri=self._tempest_ws_endpoint + '?token=' + self._personal_token
 
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
