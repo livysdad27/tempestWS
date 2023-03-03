@@ -24,7 +24,7 @@ def loader():
 class tempestWSInstaller(ExtensionInstaller):
     def __init__(self):
         super(tempestWSInstaller, self).__init__(
-            version="1.0",
+            version="1.0.1",
             name='tempestWS',
             description='Weatherflow Tempest Websocket Driver installer',
             author="Billy Jackson",
