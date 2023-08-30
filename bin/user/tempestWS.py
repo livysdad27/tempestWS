@@ -196,11 +196,12 @@ class tempestWS(weewx.drivers.AbstractDevice):
                     loop_packet['windDir'] = mqtt_data[2]
                 #The evt_precip and evt_strike code below is a test.
                 elif resp['type'] == 'evt_strike':
+                    loginf("It started lightning.  evt_strike received" + str(resp))
                     mqtt_data = resp['evt']
                     loop_packet['dateTime'] = mqtt_data[0]
+                    loop_packet['lightning_strike_count'] = 1
                     loop_packet['usUnits'] = weewx.METRICWX
-                    loop_packet['lightening_distance'] = mqtt_data[1]
-                    loop_packet['lightening_strike_count'] = mqtt_data[3]
+                    loop_packet['lightning_distance'] = mqtt_data[1]
                 elif resp['type'] == 'evt_precip':
                     loginf("It started raining.  evt_precip received" + str(resp))
                 elif resp['type'] == 'evt_station_offline':
