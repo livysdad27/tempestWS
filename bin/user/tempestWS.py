@@ -100,7 +100,7 @@ def send_listen_start_cmds(sock, dev_id, stn_id):
     check_cmd_response(sock.recv())
 
 
-DRIVER_VERSION = "1.0.1"
+DRIVER_VERSION = "1.0.2"
 HARDWARE_NAME = "Weatherflow Tempest Websocket"
 DRIVER_NAME = "tempestWS"
 
