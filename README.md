@@ -16,9 +16,9 @@
 # tempestWS Weewx Driver
 This is a [weewx](https://weewx.com) driver for the [Weatherflow Tempest](https://weatherflow.com/tempest-weather-system/) device.  This version makes use of the [Websocket](https://weatherflow.github.io/Tempest/api/ws.html) API.
 
-The primary use case for this driver is running a weewx server in the cloud so that I don't have to rely on a local device to forward reports to a web server.  One fairly inexpensive cloud server can handle both tasks.  I choose the websocket API because it submits more data than querying the REST API, with some exceptions.  They have a pretty good [geting started guide](https://weatherflow.github.io/Tempest/api/) that covers a lot of the basics.
+The primary use case for this driver is running a weewx server in the cloud so that I don't have to rely on a local device to forward reports to a web server.  One fairly inexpensive cloud server can handle both tasks.  I choose the websocket API because it submits more data than querying the REST API, with some exceptions.  They have a pretty good [quick_start guide](https://apidocs.tempestwx.com/reference/quick-start) that covers a lot of the basics.
 
-They also offer a local broadcast [UDP API](https://weatherflow.github.io/Tempest/api/udp/v171/).  This is especially useful for use cases where you might be off-grid and want to capture to a local server.  It also works well with a Raspberry Pi if you like to mess around with that sort of thing.  There are some differences in data available.  For example, I can get the RSSI/signal strength fields this way but not through the websocket or rest API.  If you're intersted in running in this mode I highly recommend the [weatherflow-udp](https://github.com/captain-coredump/weatherflow-udp) driver by captain-coredump.  I've run this setup for several months and it works really well.
+They also offer a local broadcast [UDP API](https://apidocs.tempestwx.com/reference/tempest-udp-broadcast).  This is especially useful for use cases where you might be off-grid and want to capture to a local server.  It also works well with a Raspberry Pi if you like to mess around with that sort of thing.  There are some differences in data available.  For example, I can get the RSSI/signal strength fields this way but not through the websocket or rest API.  If you're intersted in running in this mode I highly recommend the [weatherflow-udp](https://github.com/captain-coredump/weatherflow-udp) driver by captain-coredump.  I've run this setup for several months and it works really well.
 
 To install and use this driver you will need to have a personal access token (see the [geting started guide](https://weatherflow.github.io/Tempest/api/)) and your device ID.  Note that your device ID is different than the ST number or the station ID ou may see in your device's website or mobile application.  You can find the correct id under the settings -> stations -> your station name -> status options in your app.  Alternately once you're familiar witht the API you can get a token, authorize the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) and find the device ID in the output of the /stations endpoint. 
 
@@ -45,8 +45,8 @@ After these steps the driver will be set as the default driver and the configura
         tempest_ws_endpoint = wss://ws.weatherflow.com/swd/data
         restart_sleep_interval = 20
 
-* Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [geting started guide](https://weatherflow.github.io/Tempest/api/).
-* Replace the `your_tempest_device_id` with the device id that you found in the [Tempest API Explorer](https://weatherflow.github.io/Tempest/api/swagger/#!/stations/getStations) or in your web application (settings -> stations -> your station name -> status options).
+* Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [quck_start guide](https://apidocs.tempestwx.com/reference/quick-start).
+* Replace the `your_tempest_device_id` with the device id found in your Tempest web application (settings -> stations -> your station name -> status options).
 * Note that the restart_sleep_interval tells the driver how long to wait if a connection to the websocket server died before reconnecting (in seconds).  You can adjust this as needed.
 
 Restart weewx and you should be on your way!
