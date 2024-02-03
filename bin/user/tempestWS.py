@@ -181,7 +181,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                     loop_packet['pressure'] = mqtt_data[6]
                     loop_packet['supplyVoltage'] = mqtt_data[16]
                     loop_packet['radiation'] = mqtt_data[11]
-                    loop_packet['rain'] = mqtt_data[19]
+                    loop_packet['rain'] = mqtt_data[12]
                     loop_packet['UV'] = mqtt_data[10]
                     loop_packet['lightening_distance'] = mqtt_data[14]
                     loop_packet['lightening_strike_count'] = mqtt_data[15]
