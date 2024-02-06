@@ -14,7 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # tempestWS Weewx Driver
-This is a [weewx](https://weewx.com) driver for the [Weatherflow Tempest](https://weatherflow.com/tempest-weather-system/) device.  This version makes use of the [Websocket](https://weatherflow.github.io/Tempest/api/ws.html) API.
+This is a [weewx](https://weewx.com) driver for the [Weatherflow Tempest](https://weatherflow.com/tempest-weather-system/) device.  This version makes use of the [Websocket](https://apidocs.tempestwx.com/reference/websocket-reference) API.
 
 The primary use case for this driver is running a weewx server in the cloud so that I don't have to rely on a local device to forward reports to a web server.  One fairly inexpensive cloud server can handle both tasks.  I choose the websocket API because it submits more data than querying the REST API, with some exceptions.  They have a pretty good [quick_start guide](https://apidocs.tempestwx.com/reference/quick-start) that covers a lot of the basics.
 
