@@ -52,8 +52,8 @@ After these steps the driver will be set as the default driver and the configura
 Restart weewx and you should be on your way!
 
 ### Errata
-* I finally had a storm come through with one lightening strike but the code was still commented out so I don't have a good test.  If there is someone who would like to test this please let me know how it goes!  You could use the test_evt_strike branch for this. It also includes a test of capturing the evt_precip event to log that it started raining.
-* In my logs I do see events for evt_precip and evt_strike but nothing for the device offline links and my device was offline for a good long time during the last windstorm.  Basically, these aren't handled yet AND I don't see them arriving.
+* I finally got lightning strike count and distance working!  WOOOOT
+* I recently recoded a device offline message so that's now working.  This is only logged right now and not captured in Weewx.
 
 ### Todos
 I welcome pull requests or recommendations.  I ask that if you submit a pull request you include at least what versions of python and weewx you've tested on along with the operating system so that we can track what works where.  If you find issues please log them [here](https://github.com/livysdad27/tempestWS/issues).
@@ -62,6 +62,5 @@ I welcome pull requests or recommendations.  I ask that if you submit a pull req
 * Auto-increment driver version upon merge to main.
 * ~~Fix the retries counter and check for connection failure issues.~~
 * Think through branching and clearer guidelines for pull requests.  
-* Continue exploring if the wee_extension can reord the config stanza like it does with skins.
 * ~~Add connection failure code and retry count in case the websocket API goes down so that weewx doesn't crash it comes back up.~~
 
