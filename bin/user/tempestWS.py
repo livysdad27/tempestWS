@@ -159,7 +159,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
             except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
                 logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
-                self.ws.connect(self._ws_uri)
+                self.ws = create_connection(self._ws_uri)
                 check_cmd_response(self.ws.recv())
                 send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
                 retries += 1
