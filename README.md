@@ -42,12 +42,14 @@ After these steps the driver will be set as the default driver and the configura
         driver = user.tempestWS
         personal_token = your_api_token
         tempest_device_id = your_tempest_device_id
+        tempest_station_id = your_tempest_station_id
         tempest_ws_endpoint = wss://ws.weatherflow.com/swd/data
         restart_sleep_interval = 20
 
-* Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [quck_start guide](https://apidocs.tempestwx.com/reference/quick-start).
+* Replace the `your_api_token` with your personal token that you configured in your Tempest web application as referenced in the [quick_start guide](https://apidocs.tempestwx.com/reference/quick-start).
 * Replace the `your_tempest_device_id` with the device id found in your Tempest web application (settings -> stations -> your station name -> status options).
-* Note that the restart_sleep_interval tells the driver how long to wait if a connection to the websocket server died before reconnecting (in seconds).  You can adjust this as needed.
+* Replace the `your_tempest_station_id` with the station id found in your Tempest web application (settings -> stations -> your station name -> status options).  Note: The station ID is different from the device ID.  Both are required for event subscriptions (e.g., device online/offline, lightning strikes).
+* Note that the restart_sleep_interval (or reconnect_sleep_interval) tells the driver how long to wait if a connection to the websocket server died before reconnecting (in seconds).  You can adjust this as needed.
 
 Restart weewx and you should be on your way!
 
