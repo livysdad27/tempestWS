@@ -153,10 +153,11 @@ class tempestWS(weewx.drivers.AbstractDevice):
 
             # First, check to see if the connection died and retry if it did
             try:
-                raw_resp = self.ws.recv()
-                if raw_resp == "":
-                    logerr("Caught a null response in the genLoopPackets loop.")
-            except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
+                    raw_resp = self.ws.recv()
+                    if raw_resp == "":
+                        logerr("Caught a null response in the genLoopPackets loop.")
+                        continue
+                except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
                 logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
