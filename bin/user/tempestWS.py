@@ -72,10 +72,12 @@ class TooManyRetries(Exception):
 def check_cmd_response(cmd_resp):
     if cmd_resp == "":
         logerr("Null response from the websocket, is something awry?")
+        raise ValueError("Empty response from websocket")
     try:
         resp = json.loads(cmd_resp)
-    except json.decoder.JSONDecodeError:
-        logerr("Caught a decode error during a checkResponse")
+    except json.decoder.JSONDecodeError as e:
+        logerr("Caught a decode error during check_cmd_response: " + str(e))
+        raise
 
     if "type" in resp:
         if resp["type"] == 'connection_opened':
