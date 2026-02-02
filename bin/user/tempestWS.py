@@ -72,12 +72,10 @@ class TooManyRetries(Exception):
 def check_cmd_response(cmd_resp):
     if cmd_resp == "":
         logerr("Null response from the websocket, is something awry?")
-        raise ValueError("Empty response from websocket")
     try:
         resp = json.loads(cmd_resp)
-    except json.decoder.JSONDecodeError as e:
-        logerr("Caught a decode error during check_cmd_response: " + str(e))
-        raise
+    except json.decoder.JSONDecodeError:
+        logerr("Caught a decode error during a checkResponse")
 
     if "type" in resp:
         if resp["type"] == 'connection_opened':
@@ -120,9 +118,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_device_id = str(cfg_dict.get('tempest_device_id'))
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
-        # Support both reconnect_sleep_interval and restart_sleep_interval for backward compatibility
-        sleep_interval = cfg_dict.get('reconnect_sleep_interval') or cfg_dict.get('restart_sleep_interval')
-        self._reconnect_sleep_interval = int(sleep_interval) if sleep_interval else 20
+        self._reconnect_sleep_interval = int(cfg_dict.get('reconnect_sleep_interval'))
         self._ws_uri=self._tempest_ws_endpoint + '?token=' + self._personal_token
 
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
@@ -157,14 +153,13 @@ class tempestWS(weewx.drivers.AbstractDevice):
 
             # First, check to see if the connection died and retry if it did
             try:
-                    raw_resp = self.ws.recv()
-                    if raw_resp == "":
-                        logerr("Caught a null response in the genLoopPackets loop.")
-                        continue
-                except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
+                raw_resp = self.ws.recv()
+                if raw_resp == "":
+                    logerr("Caught a null response in the genLoopPackets loop.")
+            except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
                 logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
-                self.ws = create_connection(self._ws_uri)
+                self.ws.connect(self._ws_uri)
                 check_cmd_response(self.ws.recv())
                 send_listen_start_cmds(self.ws, self._tempest_device_id, self._tempest_station_id)
                 retries += 1
@@ -188,11 +183,11 @@ class tempestWS(weewx.drivers.AbstractDevice):
                     loop_packet['radiation'] = mqtt_data[11]
                     loop_packet['rain'] = mqtt_data[12]
                     loop_packet['UV'] = mqtt_data[10]
-                loop_packet['lightning_distance'] = mqtt_data[14]
-                loop_packet['lightning_strike_count'] = mqtt_data[15]
+                    loop_packet['lightening_distance'] = mqtt_data[14]
+                    loop_packet['lightening_strike_count'] = mqtt_data[15]
                     loop_packet['windDir'] = mqtt_data[4]
                     loop_packet['windGust'] = mqtt_data[3]
-                    loop_packet['windSpeed'] = mqtt_data[2]
+                    loop_packet['windSpeed'] = mqtt_data[1]
                 elif resp['type'] == 'rapid_wind':
                     mqtt_data = resp['ob']
                     loop_packet['dateTime'] = mqtt_data[0]
