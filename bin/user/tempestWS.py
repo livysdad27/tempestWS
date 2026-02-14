@@ -44,7 +44,7 @@ try:
 
     def logerr(msg):
         log.error(msg)
-    
+
     loginf("Using new-style logging!")
 
 except ImportError:
@@ -62,32 +62,33 @@ except ImportError:
 
     def logerr(msg):
         logmsg(syslog.LOG_ERR, msg)
-    
+
     loginf("Using old-style logging.")
 
 class TooManyRetries(Exception):
     pass
 
-# Helper function to see if our start commands return good data.  
+# Helper function to see if our start commands return good data.
 def check_cmd_response(cmd_resp):
     if cmd_resp == "":
         logerr("Null response from the websocket, is something awry?")
+        return
     try:
         resp = json.loads(cmd_resp)
     except json.decoder.JSONDecodeError:
         logerr("Caught a decode error during a checkResponse")
+        return
 
     if "type" in resp:
         if resp["type"] == 'connection_opened':
             loginf("Successfully received open connection response!")
         elif resp["type"] == 'ack':
-            loginf ("Received a positive ack response for " + str(resp["id"]))
+            loginf("Received a positive ack response for " + str(resp["id"]))
     elif "status" in resp:
         if resp["status"]["status_message"] == "SUCCESS":
             loginf("SUCCESS response from listen_start_events message.")
     else:
         logerr("I don't recognize this at all: " + str(resp))
-    
 
 # Helper function to send restart commands during connect/reconnect.  This will let me move the
 # check/validation code for a connection and start commands here as a todo
@@ -96,7 +97,7 @@ def send_listen_start_cmds(sock, dev_id, stn_id):
     check_cmd_response(sock.recv())
     sock.send('{"type":"listen_start",' + ' "device_id":' + dev_id + ',' + ' "id":"listen_start"}')
     check_cmd_response(sock.recv())
-    sock.send('{"type":"listen_start_events",' + ' "device_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
+    sock.send('{"type":"listen_start_events",' + ' "station_id":' + stn_id + ',' + ' "id":"listen_start_events"}')
     check_cmd_response(sock.recv())
 
 
@@ -119,7 +120,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         self._tempest_station_id = str(cfg_dict.get('tempest_station_id'))
         self._tempest_ws_endpoint = str(cfg_dict.get('tempest_ws_endpoint'))
         self._reconnect_sleep_interval = int(cfg_dict.get('reconnect_sleep_interval'))
-        self._ws_uri=self._tempest_ws_endpoint + '?token=' + self._personal_token
+        self._ws_uri = self._tempest_ws_endpoint + '?token=' + self._personal_token
 
         # Connect to the websocket and issue the starting commands for rapid and listen packets.
         loginf("Starting the websocket connection to " + self._tempest_ws_endpoint)
@@ -143,7 +144,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
         resp_listen_events_stop = self.ws.recv()
         loginf("Listen_stop_events response:" + str(resp_listen_events_stop))
         self.ws.close()
-        
+
     # This is where the loop packets are made via a call to the rest API endpoint
     def genLoopPackets(self):
         retries = 0
@@ -157,7 +158,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 if raw_resp == "":
                     logerr("Caught a null response in the genLoopPackets loop.")
             except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
-                logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
+                logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " + str(retries))
                 time.sleep(self._reconnect_sleep_interval)
                 self.ws.connect(self._ws_uri)
                 check_cmd_response(self.ws.recv())
@@ -205,16 +206,16 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 elif resp['type'] == 'evt_precip':
                     loginf("It started raining.  evt_precip received" + str(resp))
                 elif resp['type'] == 'evt_station_offline':
-                    loginf("Station offline event detected" +str(resp))
+                    loginf("Station offline event detected" + str(resp))
                 elif resp['type'] == 'evt_station_online':
-                    loginf("Station online event detected" +str(resp))
+                    loginf("Station online event detected" + str(resp))
                 elif resp['type'] == 'evt_device_offline':
-                    loginf("Device offline event detected" +str(resp))
+                    loginf("Device offline event detected" + str(resp))
                 elif resp['type'] == 'evt_device_online':
-                    loginf("Device online event detected" +str(resp))
-            else: 
+                    loginf("Device online event detected" + str(resp))
+            else:
                 loginf("Unknown message has no type: " + str(resp))
-            
+
             if loop_packet != {}:
                 yield loop_packet
 
@@ -224,12 +225,12 @@ if __name__ == "__main__":
     import weewx
     import weeutil.weeutil
     try:
-      import weeutil.logger
+        import weeutil.logger
 
-      weewx.debug = 1
-      weeutil.logger.setup('tempestWS', {})
-    except:
-      pass
+        weewx.debug = 1
+        weeutil.logger.setup('tempestWS', {})
+    except Exception:
+        pass
 
     driver = tempestWS()
     for packet in driver.genLoopPackets():
