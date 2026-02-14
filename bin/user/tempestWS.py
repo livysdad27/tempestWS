@@ -187,7 +187,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                     loop_packet['lightening_strike_count'] = mqtt_data[15]
                     loop_packet['windDir'] = mqtt_data[4]
                     loop_packet['windGust'] = mqtt_data[3]
-                    loop_packet['windSpeed'] = mqtt_data[1]
+                    loop_packet['windSpeed'] = mqtt_data[2]
                 elif resp['type'] == 'rapid_wind':
                     mqtt_data = resp['ob']
                     loop_packet['dateTime'] = mqtt_data[0]
