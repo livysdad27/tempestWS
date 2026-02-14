@@ -156,6 +156,7 @@ class tempestWS(weewx.drivers.AbstractDevice):
                 raw_resp = self.ws.recv()
                 if raw_resp == "":
                     logerr("Caught a null response in the genLoopPackets loop.")
+                    continue
             except (WebSocketConnectionClosedException, WebSocketTimeoutException) as e:
                 logerr("Caught a " + str(type(e)) + ", attempting to reconnect!  Try " +str(retries))
                 time.sleep(self._reconnect_sleep_interval)
